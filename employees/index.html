@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventaris Kantor - Pegawai</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --sidebar-bg: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+      --primary-color: #4e73df;
+      --danger-color: #e74c3c;
+      --warning-color: #f39c12;
+    }
+    
+    /* Sidebar Styles */
+    #sidebar {
+      min-width: 280px;
+      max-width: 280px;
+      background: var(--sidebar-bg);
+      color: white;
+      transition: all 0.3s;
+      min-height: 100vh;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      position: fixed;
+      z-index: 1000;
+    }
+    
+    #sidebar .sidebar-header {
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.2);
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    #sidebar .sidebar-header h3 {
+      color: white;
+      margin: 0;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    #sidebar .sidebar-header h3 i {
+      margin-right: 10px;
+      font-size: 1.5rem;
+      color: var(--primary-color);
+    }
+    
+    #sidebar ul.components {
+      padding: 20px 0;
+    }
+    
+    #sidebar ul li a {
+      padding: 12px 20px;
+      font-size: 1em;
+      display: flex;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.8);
+      transition: all 0.3s;
+      text-decoration: none;
+      border-left: 4px solid transparent;
+    }
+    
+    #sidebar ul li a:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 4px solid var(--primary-color);
+    }
+    
+    #sidebar ul li a i {
+      margin-right: 12px;
+      font-size: 1.1rem;
+      min-width: 25px;
+      text-align: center;
+    }
+    
+    #sidebar ul li.active a {
+      color: white;
+      background: rgba(78, 115, 223, 0.2);
+      border-left: 4px solid var(--primary-color);
+    }
+    
+    /* Content styles */
+    #content {
+      width: calc(100% - 280px);
+      min-height: 100vh;
+      transition: all 0.3s;
+      position: relative;
+      left: 280px;
+      background-color: #f8f9fc;
+    }
+    
+    /* Collapsed sidebar */
+    #sidebar.active {
+      margin-left: -280px;
+    }
+    
+    #content.active {
+      width: 100%;
+      left: 0;
+    }
+    
+    /* Navbar styling */
+    .navbar {
+      padding: 15px 20px;
+      background: white;
+      border: none;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+    
+    /* Card styling */
+    .card {
+      border: none;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+      margin-bottom: 2rem;
+    }
+    
+    .card-header {
+      background-color: #f8f9fc;
+      border-bottom: 1px solid #e3e6f0;
+    }
+    
+    /* Table styling */
+    .table-responsive {
+      overflow-x: auto;
+    }
+    
+    .table {
+      width: 100%;
+      margin-bottom: 1rem;
+      color: #212529;
+    }
+    
+    .table th {
+      background-color: #f8f9fc;
+      border-top: none;
+      border-bottom: 1px solid #e3e6f0;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+    }
+    
+    .table td {
+      vertical-align: middle;
+      border-top: 1px solid #e3e6f0;
+    }
+    
+    /* Table actions */
+    .table-actions {
+      white-space: nowrap;
+      width: 120px;
+    }
+    
+    .btn-sm {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      border-radius: 0.2rem;
+    }
+    
+    /* Badge styling */
+    .badge {
+      font-weight: 500;
+      padding: 0.35em 0.65em;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+      #sidebar {
+        margin-left: -280px;
+      }
+      #sidebar.active {
+        margin-left: 0;
+      }
+      #content {
+        width: 100%;
+        left: 0;
+      }
+      #content.active {
+        left: 280px;
+        width: calc(100% - 280px);
+      }
+      
+      .table-actions {
+        width: auto;
+      }
+    }
+    
+    /* Loading spinner */
+    .spinner-border {
+      display: inline-block;
+      width: 1.5rem;
+      height: 1.5rem;
+      vertical-align: text-bottom;
+      border: 0.25em solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: spinner-border 0.75s linear infinite;
+    }
+    
+    @keyframes spinner-border {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Custom buttons */
+    .btn-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+    
+    .btn-danger {
+      background-color: var(--danger-color);
+      border-color: var(--danger-color);
+    }
+    
+    .btn-warning {
+      background-color: var(--warning-color);
+      border-color: var(--warning-color);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <!-- Sidebar -->
+    <nav id="sidebar">
+      <div class="sidebar-header">
+        <h3><i class="bi bi-box-seam"></i>Inventaris Kantor</h3>
+      </div>
+      
+      <ul class="list-unstyled components">
+        <li>
+          <a href="../index.html">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="../items/index.html">
+            <i class="bi bi-box-seam"></i>
+            <span>Barang Inventaris</span>
+          </a>
+        </li>
+        <li>
+          <a href="../categories/index.html">
+            <i class="bi bi-tags"></i>
+            <span>Kategori</span>
+          </a>
+        </li>
+        <li class="active">
+          <a href="index.html">
+            <i class="bi bi-people"></i>
+            <span>Pegawai</span>
+          </a>
+        </li>
+        <li>
+          <a href="../loans/index.html">
+            <i class="bi bi-cart-check"></i>
+            <span>Peminjaman</span>
+          </a>
+        </li>
+        <li>
+          <a href="../settings/index.html">
+            <i class="bi bi-gear"></i>
+            <span>Pengaturan</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Page Content -->
+    <div id="content">
+      <!-- Top Navigation -->
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <button type="button" id="sidebarCollapse" class="btn btn-link" aria-label="Toggle sidebar">
+            <i class="bi bi-list"></i>
+          </button>
+          
+          <div class="d-flex align-items-center">
+            <div class="dropdown">
+              <button class="btn btn-link dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-circle me-1"></i> Admin
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow">
+                <li><a class="dropdown-item" href="../profile/"><i class="bi bi-person me-2"></i> Profil</a></li>
+                <li><a class="dropdown-item" href="../settings/"><i class="bi bi-gear me-2"></i> Pengaturan</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <div class="container-fluid">
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+          <h1 class="h3 mb-0 text-gray-800">Daftar Pegawai</h1>
+          <div>
+            <a href="add.html" class="btn btn-primary">
+              <i class="bi bi-plus"></i> Tambah Pegawai
+            </a>
+          </div>
+        </div>
+
+        <div class="card shadow mb-4">
+          <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Semua Pegawai</h6>
+            <div class="dropdown no-arrow">
+              <button class="btn btn-link dropdown-toggle" type="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow">
+                <li><a class="dropdown-item" href="#" id="filterData"><i class="bi bi-funnel me-2"></i> Filter</a></li>
+                <li><a class="dropdown-item" href="#" id="exportData"><i class="bi bi-download me-2"></i> Ekspor</a></li>
+                <li><a class="dropdown-item" href="#" id="refreshData"><i class="bi bi-arrow-clockwise me-2"></i> Refresh</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover" id="employeesTable" width="100%" cellspacing="0">
+                <thead class="thead-light">
+                  <tr>
+                    <th width="5%">No</th>
+                    <th>Nama</th>
+                    <th width="15%">Departemen</th>
+                    <th width="15%">Jabatan</th>
+                    <th width="20%">Email</th>
+                    <th width="15%">Status</th>
+                    <th width="12%" class="text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>1</td>
+                    <td>Budi Santoso</td>
+                    <td><span class="badge bg-primary">IT</span></td>
+                    <td>Staff IT</td>
+                    <td>budi@example.com</td>
+                    <td><span class="badge bg-success">Aktif</span></td>
+                    <td class="table-actions text-center">
+                      <a href="edit.html?id=1" class="btn btn-sm btn-warning" title="Edit" data-bs-toggle="tooltip">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <button class="btn btn-sm btn-danger btn-delete" data-id="1" title="Hapus" data-bs-toggle="tooltip">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                      <a href="view.html?id=1" class="btn btn-sm btn-info" title="Detail" data-bs-toggle="tooltip">
+                        <i class="bi bi-eye"></i>
+                      </a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>2</td>
+                    <td>Ani Wijaya</td>
+                    <td><span class="badge bg-info">HRD</span></td>
+                    <td>Manager HR</td>
+                    <td>ani@example.com</td>
+                    <td><span class="badge bg-success">Aktif</span></td>
+                    <td class="table-actions text-center">
+                      <a href="edit.html?id=2" class="btn btn-sm btn-warning" title="Edit" data-bs-toggle="tooltip">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <button class="btn btn-sm btn-danger btn-delete" data-id="2" title="Hapus" data-bs-toggle="tooltip">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                      <a href="view.html?id=2" class="btn btn-sm btn-info" title="Detail" data-bs-toggle="tooltip">
+                        <i class="bi bi-eye"></i>
+                      </a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>3</td>
+                    <td>Citra Dewi</td>
+                    <td><span class="badge bg-warning text-dark">Keuangan</span></td>
+                    <td>Akuntan</td>
+                    <td>citra@example.com</td>
+                    <td><span class="badge bg-secondary">Non-Aktif</span></td>
+                    <td class="table-actions text-center">
+                      <a href="edit.html?id=3" class="btn btn-sm btn-warning" title="Edit" data-bs-toggle="tooltip">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <button class="btn btn-sm btn-danger btn-delete" data-id="3" title="Hapus" data-bs-toggle="tooltip">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                      <a href="view.html?id=3" class="btn btn-sm btn-info" title="Detail" data-bs-toggle="tooltip">
+                        <i class="bi bi-eye"></i>
+                      </a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Hapus</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Apakah Anda yakin ingin menghapus data pegawai ini?</p>
+          <p class="text-danger"><small>Semua data peminjaman terkait pegawai ini akan diarsipkan.</small></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-danger" id="confirmDelete">
+            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            Hapus
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Modal -->
+  <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="filterModalLabel">Filter Pegawai</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="filterForm">
+            <div class="mb-3">
+              <label for="filterDepartment" class="form-label">Departemen</label>
+              <select class="form-select" id="filterDepartment">
+                <option value="">Semua Departemen</option>
+                <option value="IT">IT</option>
+                <option value="HRD">HRD</option>
+                <option value="Keuangan">Keuangan</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Operasional">Operasional</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="filterPosition" class="form-label">Jabatan</label>
+              <input type="text" class="form-control" id="filterPosition" placeholder="Cari berdasarkan jabatan">
+            </div>
+            <div class="mb-3">
+              <label for="filterStatus" class="form-label">Status</label>
+              <select class="form-select" id="filterStatus">
+                <option value="">Semua Status</option>
+                <option value="Aktif">Aktif</option>
+                <option value="Non-Aktif">Non-Aktif</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-outline-secondary" id="resetFilter">
+            Reset
+          </button>
+          <button type="button" class="btn btn-primary" id="applyFilter">
+            Terapkan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exportModalLabel">Ekspor Data</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Format Ekspor</label>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="exportFormat" id="exportExcel" value="excel" checked>
+              <label class="form-check-label" for="exportExcel">
+                Excel (.xlsx)
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="exportFormat" id="exportPDF" value="pdf">
+              <label class="form-check-label" for="exportPDF">
+                PDF (.pdf)
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="exportFormat" id="exportCSV" value="csv">
+              <label class="form-check-label" for="exportCSV">
+                CSV (.csv)
+              </label>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Kolom yang Diekspor</label>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="exportColName" checked>
+              <label class="form-check-label" for="exportColName">Nama</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="exportColDept" checked>
+              <label class="form-check-label" for="exportColDept">Departemen</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="exportColPosition" checked>
+              <label class="form-check-label" for="exportColPosition">Jabatan</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="exportColEmail" checked>
+              <label class="form-check-label" for="exportColEmail">Email</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="exportColStatus" checked>
+              <label class="form-check-label" for="exportColStatus">Status</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary" id="confirmExport">
+            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            Ekspor
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      // Sidebar toggle functionality
+      $('#sidebarCollapse').on('click', function() {
+        $('#sidebar').toggleClass('active');
+        $('#content').toggleClass('active');
+      });
+
+      // Initialize tooltips
+      const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+      });
+
+      // Initialize DataTable with Indonesian language and export buttons
+      const employeesTable = $('#employeesTable').DataTable({
+        language: {
+          url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json'
+        },
+        dom: '<"top"fB>rt<"bottom"lip><"clear">',
+        buttons: [
+          {
+            extend: 'copy',
+            text: '<i class="bi bi-files"></i> Copy',
+            className: 'btn btn-sm btn-outline-secondary',
+            exportOptions: {
+              columns: ':visible'
+            }
+          },
+          {
+            extend: 'excel',
+            text: '<i class="bi bi-file-earmark-excel"></i> Excel',
+            className: 'btn btn-sm btn-outline-success',
+            exportOptions: {
+              columns: ':visible'
+            }
+          },
+          {
+            extend: 'pdf',
+            text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
+            className: 'btn btn-sm btn-outline-danger',
+            exportOptions: {
+              columns: ':visible'
+            }
+          },
+          {
+            extend: 'print',
+            text: '<i class="bi bi-printer"></i> Print',
+            className: 'btn btn-sm btn-outline-primary',
+            exportOptions: {
+              columns: ':visible'
+            }
+          }
+        ],
+        columnDefs: [
+          { orderable: false, targets: [0, 5, 6] }, // Disable sorting for No, Status, and Action columns
+          { searchable: false, targets: [0, 6] } // Disable search for No and Action columns
+        ],
+        order: [[1, 'asc']], // Default sort by Name ascending
+        responsive: true,
+        stateSave: true
+      });
+
+      // Add the buttons to the DOM
+      employeesTable.buttons().container()
+        .appendTo('#employeesTable_wrapper .col-md-6:eq(0)');
+
+      // Delete button handler
+      $(document).on('click', '.btn-delete', function() {
+        const employeeId = $(this).data('id');
+        const employeeName = $(this).closest('tr').find('td:eq(1)').text();
+        
+        $('#deleteModal .modal-body p:first').html(
+          `Apakah Anda yakin ingin menghapus data pegawai <strong>${employeeName}</strong>?`
+        );
+        
+        $('#deleteModal').modal('show');
+        $('#confirmDelete').data('id', employeeId);
+      });
+
+      // Confirm delete
+      $('#confirmDelete').on('click', function() {
+        const $btn = $(this);
+        const employeeId = $btn.data('id');
+        
+        // Show loading spinner
+        $btn.prop('disabled', true);
+        $btn.find('.spinner-border').removeClass('d-none');
+        
+        // Simulate AJAX call
+        setTimeout(() => {
+          // Hide loading spinner
+          $btn.prop('disabled', false);
+          $btn.find('.spinner-border').addClass('d-none');
+          
+          // Close modal and show success message
+          $('#deleteModal').modal('hide');
+          
+          // Show toast notification
+          showToast('success', 'Berhasil', 'Data pegawai berhasil dihapus');
+          
+          // In a real app, you would remove the row or reload the table
+          // employeesTable.row($(`.btn-delete[data-id="${employeeId}"]`).closest('tr')).remove().draw();
+        }, 1500);
+      });
+
+      // Filter button handler
+      $('#filterData').on('click', function(e) {
+        e.preventDefault();
+        $('#filterModal').modal('show');
+      });
+
+      // Reset filter
+      $('#resetFilter').on('click', function() {
+        $('#filterForm')[0].reset();
+        employeesTable.search('').columns().search('').draw();
+      });
+
+      // Apply filter
+      $('#applyFilter').on('click', function() {
+        const department = $('#filterDepartment').val();
+        const position = $('#filterPosition').val();
+        const status = $('#filterStatus').val();
+        
+        // Filter the table
+        employeesTable.column(2).search(department, false, true);
+        employeesTable.column(3).search(position, false, true);
+        employeesTable.column(5).search(status, false, true);
+        employeesTable.draw();
+        
+        $('#filterModal').modal('hide');
+        
+        // Show toast notification
+        showToast('info', 'Filter', 'Filter telah diterapkan');
+      });
+
+      // Export button handler
+      $('#exportData').on('click', function(e) {
+        e.preventDefault();
+        $('#exportModal').modal('show');
+      });
+
+      // Confirm export
+      $('#confirmExport').on('click', function() {
+        const $btn = $(this);
+        const format = $('input[name="exportFormat"]:checked').val();
+        
+        // Show loading spinner
+        $btn.prop('disabled', true);
+        $btn.find('.spinner-border').removeClass('d-none');
+        
+        // Simulate export process
+        setTimeout(() => {
+          // Hide loading spinner
+          $btn.prop('disabled', false);
+          $btn.find('.spinner-border').addClass('d-none');
+          
+          // Close modal
+          $('#exportModal').modal('hide');
+          
+          // Show toast notification
+          showToast('success', 'Ekspor', `Data berhasil diekspor dalam format ${format.toUpperCase()}`);
+          
+          // In a real app, this would trigger the actual export
+          // Here we just simulate by triggering the DataTable button
+          if (format === 'excel') {
+            $('.buttons-excel').click();
+          } else if (format === 'pdf') {
+            $('.buttons-pdf').click();
+          } else {
+            $('.buttons-csv').click();
+          }
+        }, 1000);
+      });
+
+      // Refresh button handler
+      $('#refreshData').on('click', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        const $btn = $(this);
+        const originalHtml = $btn.html();
+        $btn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memuat...');
+        
+        // Simulate refresh
+        setTimeout(() => {
+          // Restore original button state
+          $btn.html(originalHtml);
+          
+          // Show toast notification
+          showToast('success', 'Refresh', 'Data berhasil diperbarui');
+          
+          // In a real app, you would reload the table data
+          // employeesTable.ajax.reload();
+        }, 1000);
+      });
+
+      // Logout functionality
+      $('#logoutBtn').on('click', function(e) {
+        e.preventDefault();
+        
+        const $btn = $(this);
+        const originalHtml = $btn.html();
+        $btn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Logging out...');
+        
+        setTimeout(() => {
+          // Here you would typically make an AJAX call to logout
+          console.log('Logging out...');
+          window.location.href = '../../login.html';
+        }, 500);
+      });
+
+      // Toast notification function
+      function showToast(type, title, message) {
+        const toast = $(`
+          <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+              <div class="toast-header">
+                <strong class="me-auto">${title}</strong>
+                <small class="text-muted">baru saja</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+              </div>
+              <div class="toast-body">
+                ${message}
+              </div>
+            </div>
+          </div>
+        `);
+        
+        // Add appropriate background class based on type
+        const toastBody = toast.find('.toast-body');
+        if (type === 'success') {
+          toastBody.addClass('bg-success text-white');
+        } else if (type === 'error') {
+          toastBody.addClass('bg-danger text-white');
+        } else if (type === 'info') {
+          toastBody.addClass('bg-info text-white');
+        } else if (type === 'warning') {
+          toastBody.addClass('bg-warning text-dark');
+        }
+        
+        // Append to body and auto-remove after delay
+        $('body').append(toast);
+        setTimeout(() => {
+          toast.remove();
+        }, 5000);
+      }
+    });
+  </script>
+</body>
+</html>

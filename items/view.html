@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Barang - Inventaris Kantor</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root {
+      --sidebar-bg: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+      --primary-color: #4e73df;
+      --danger-color: #e74c3c;
+      --warning-color: #f39c12;
+      --success-color: #28a745;
+      --info-color: #17a2b8;
+    }
+    
+    /* Sidebar Styles */
+    #sidebar {
+      min-width: 280px;
+      max-width: 280px;
+      background: var(--sidebar-bg);
+      color: white;
+      transition: all 0.3s;
+      min-height: 100vh;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      position: fixed;
+      z-index: 1000;
+    }
+    
+    #sidebar .sidebar-header {
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.2);
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    #sidebar .sidebar-header h3 {
+      color: white;
+      margin: 0;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    #sidebar .sidebar-header h3 i {
+      margin-right: 10px;
+      font-size: 1.5rem;
+      color: var(--primary-color);
+    }
+    
+    #sidebar ul.components {
+      padding: 20px 0;
+    }
+    
+    #sidebar ul li a {
+      padding: 12px 20px;
+      font-size: 1em;
+      display: flex;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.8);
+      transition: all 0.3s;
+      text-decoration: none;
+      border-left: 4px solid transparent;
+    }
+    
+    #sidebar ul li a:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 4px solid var(--primary-color);
+    }
+    
+    #sidebar ul li a i {
+      margin-right: 12px;
+      font-size: 1.1rem;
+      min-width: 25px;
+      text-align: center;
+    }
+    
+    #sidebar ul li.active a {
+      color: white;
+      background: rgba(78, 115, 223, 0.2);
+      border-left: 4px solid var(--primary-color);
+    }
+    
+    /* Content styles */
+    #content {
+      width: calc(100% - 280px);
+      min-height: 100vh;
+      transition: all 0.3s;
+      position: relative;
+      left: 280px;
+      background-color: #f8f9fc;
+    }
+    
+    /* Collapsed sidebar */
+    #sidebar.active {
+      margin-left: -280px;
+    }
+    
+    #content.active {
+      width: 100%;
+      left: 0;
+    }
+    
+    /* Navbar styling */
+    .navbar {
+      padding: 15px 20px;
+      background: white;
+      border: none;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+    
+    /* Card styling */
+    .card {
+      border: none;
+      border-radius: 0.35rem;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+    }
+    
+    .card-header {
+      background-color: #f8f9fc;
+      border-bottom: 1px solid #e3e6f0;
+      padding: 1rem 1.35rem;
+    }
+    
+    /* Item image styling */
+    .item-image {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #dee2e6;
+      border-radius: 0.25rem;
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    /* QR Code container */
+    .qr-code-container {
+      width: 150px;
+      height: 150px;
+      padding: 10px;
+      border: 1px solid #dee2e6;
+      border-radius: 0.25rem;
+      background-color: white;
+      margin-bottom: 1rem;
+    }
+    
+    /* Detail card styling */
+    .detail-card {
+      background-color: white;
+      border-radius: 0.25rem;
+      border: 1px solid rgba(0, 0, 0, 0.125);
+    }
+    
+    /* Badge styling */
+    .badge {
+      font-weight: 500;
+      padding: 0.35em 0.65em;
+    }
+    
+    /* Table styling */
+    .table-responsive {
+      overflow-x: auto;
+    }
+    
+    .table {
+      width: 100%;
+      margin-bottom: 1rem;
+      color: #212529;
+    }
+    
+    .table th {
+      background-color: #f8f9fc;
+      border-top: none;
+      border-bottom: 1px solid #e3e6f0;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+    }
+    
+    .table td {
+      vertical-align: middle;
+      border-top: 1px solid #e3e6f0;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+      #sidebar {
+        margin-left: -280px;
+      }
+      #sidebar.active {
+        margin-left: 0;
+      }
+      #content {
+        width: 100%;
+        left: 0;
+      }
+      #content.active {
+        left: 280px;
+        width: calc(100% - 280px);
+      }
+      
+      .qr-code-container {
+        width: 120px;
+        height: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <!-- Sidebar -->
+    <nav id="sidebar">
+      <div class="sidebar-header">
+        <h3><i class="bi bi-box-seam"></i>Inventaris Kantor</h3>
+      </div>
+      
+      <ul class="list-unstyled components">
+        <li>
+          <a href="../index.html">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="active">
+          <a href="index.html">
+            <i class="bi bi-box-seam"></i>
+            <span>Barang Inventaris</span>
+          </a>
+        </li>
+        <li>
+          <a href="../categories/index.html">
+            <i class="bi bi-tags"></i>
+            <span>Kategori</span>
+          </a>
+        </li>
+        <li>
+          <a href="../employees/index.html">
+            <i class="bi bi-people"></i>
+            <span>Pegawai</span>
+          </a>
+        </li>
+        <li>
+          <a href="../loans/index.html">
+            <i class="bi bi-cart-check"></i>
+            <span>Peminjaman</span>
+          </a>
+        </li>
+        <li>
+          <a href="../settings/index.html">
+            <i class="bi bi-gear"></i>
+            <span>Pengaturan</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Page Content -->
+    <div id="content">
+      <!-- Top Navigation -->
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <button type="button" id="sidebarCollapse" class="btn btn-link" aria-label="Toggle sidebar">
+            <i class="bi bi-list"></i>
+          </button>
+          
+          <div class="d-flex align-items-center">
+            <div class="dropdown">
+              <button class="btn btn-link dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-circle me-1"></i> Admin
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow">
+                <li><a class="dropdown-item" href="../profile/"><i class="bi bi-person me-2"></i> Profil</a></li>
+                <li><a class="dropdown-item" href="../settings/"><i class="bi bi-gear me-2"></i> Pengaturan</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <div class="container-fluid">
+        <nav aria-label="breadcrumb" class="mb-4">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="../../index.html">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="index.html">Barang Inventaris</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Detail Barang</li>
+          </ol>
+        </nav>
+
+        <div class="card shadow mb-4">
+          <div class="card-header py-3 d-flex flex-wrap justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Detail Barang: Laptop Dell XPS 15</h6>
+            <div class="mt-2 mt-md-0">
+              <div class="btn-group" role="group">
+                <a href="edit.html?id=1" class="btn btn-sm btn-warning me-2">
+                  <i class="bi bi-pencil"></i> Edit
+                </a>
+                <button class="btn btn-sm btn-danger me-2" id="printQrBtn">
+                  <i class="bi bi-qr-code"></i> Cetak QR
+                </button>
+                <a href="index.html" class="btn btn-sm btn-secondary">
+                  <i class="bi bi-arrow-left"></i> Kembali
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-4 text-center mb-4 mb-md-0">
+                <img src="https://via.placeholder.com/300x200?text=Laptop+Dell+XPS+15" alt="Gambar Barang" class="item-image img-fluid mb-3">
+                
+                <div class="qr-code-container mx-auto mb-3" id="qrcode"></div>
+                
+                <div class="d-flex justify-content-center gap-2">
+                  <button class="btn btn-sm btn-outline-primary" id="downloadQrBtn">
+                    <i class="bi bi-download"></i> Unduh QR
+                  </button>
+                  <button class="btn btn-sm btn-outline-secondary" id="shareQrBtn">
+                    <i class="bi bi-share"></i> Bagikan
+                  </button>
+                </div>
+                
+                <p class="mt-2 text-muted small">Scan QR untuk detail barang</p>
+              </div>
+              
+              <div class="col-md-8">
+                <div class="detail-card p-3 mb-4">
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label fw-bold">Kode Barang:</label>
+                      <p class="mb-0">INV-2023-001</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label fw-bold">Nama Barang:</label>
+                      <p class="mb-0">Laptop Dell XPS 15</p>
+                    </div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label fw-bold">Kategori:</label>
+                      <p class="mb-0"><span class="badge bg-primary">Elektronik</span></p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label fw-bold">Jumlah:</label>
+                      <p class="mb-0">10 unit (8 tersedia, 2 dipinjam)</p>
+                    </div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label fw-bold">Lokasi:</label>
+                      <p class="mb-0">Ruang IT, Lantai 2</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label fw-bold">Status:</label>
+                      <p class="mb-0"><span class="badge bg-success">Tersedia</span></p>
+                    </div>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label class="form-label fw-bold">Deskripsi:</label>
+                    <p class="mb-0">Laptop untuk keperluan operasional kantor, spesifikasi: Intel Core i7, 16GB RAM, 512GB SSD, NVIDIA GTX 1650. Digunakan untuk pekerjaan desain grafis dan pengembangan.</p>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label fw-bold">Tanggal Ditambahkan:</label>
+                      <p class="mb-0">10 Juli 2023</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label fw-bold">Terakhir Diupdate:</label>
+                      <p class="mb-0">15 Agustus 2023</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row mt-4">
+              <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h5 class="fw-bold mb-0">Riwayat Peminjaman</h5>
+                  <button class="btn btn-sm btn-outline-primary" id="exportLoanHistory">
+                    <i class="bi bi-download"></i> Ekspor Riwayat
+                  </button>
+                </div>
+                
+                <div class="table-responsive">
+                  <table class="table table-bordered table-hover" id="loanHistoryTable">
+                    <thead class="table-light">
+                      <tr>
+                        <th width="15%">Tanggal Pinjam</th>
+                        <th width="15%">Peminjam</th>
+                        <th width="20%">Tujuan</th>
+                        <th width="15%">Tanggal Kembali</th>
+                        <th width="10%">Status</th>
+                        <th width="10%">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>18 Juli 2023</td>
+                        <td>Budi Santoso (IT)</td>
+                        <td>Presentasi Klien di Jakarta</td>
+                        <td>20 Juli 2023</td>
+                        <td><span class="badge bg-success">Dikembalikan</span></td>
+                        <td class="text-center">
+                          <button class="btn btn-sm btn-outline-info" title="Detail" data-bs-toggle="tooltip">
+                            <i class="bi bi-eye"></i>
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>01 Agustus 2023</td>
+                        <td>Ani Wijaya (HRD)</td>
+                        <td>Training Karyawan Baru</td>
+                        <td>-</td>
+                        <td><span class="badge bg-warning text-dark">Sedang Dipinjam</span></td>
+                        <td class="text-center">
+                          <button class="btn btn-sm btn-outline-info" title="Detail" data-bs-toggle="tooltip">
+                            <i class="bi bi-eye"></i>
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>25 Juni 2023</td>
+                        <td>Citra Dewi (Keuangan)</td>
+                        <td>Audit Eksternal</td>
+                        <td>30 Juni 2023</td>
+                        <td><span class="badge bg-secondary">Selesai</span></td>
+                        <td class="text-center">
+                          <button class="btn btn-sm btn-outline-info" title="Detail" data-bs-toggle="tooltip">
+                            <i class="bi bi-eye"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print QR Modal -->
+  <div class="modal fade" id="printQrModal" tabindex="-1" aria-labelledby="printQrModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="printQrModalLabel">Cetak QR Code</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center">
+          <div id="printQrContainer" class="mb-3">
+            <div id="printableQr" class="mx-auto"></div>
+            <h5 class="mt-2">Laptop Dell XPS 15</h5>
+            <p class="mb-0">Kode: INV-2023-001</p>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="includeItemInfo" checked>
+            <label class="form-check-label" for="includeItemInfo">Sertakan info barang</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary" id="confirmPrint">
+            <i class="bi bi-printer"></i> Cetak
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      // Sidebar toggle functionality
+      $('#sidebarCollapse').on('click', function() {
+        $('#sidebar').toggleClass('active');
+        $('#content').toggleClass('active');
+      });
+
+      // Initialize tooltips
+      const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+      });
+
+      // Generate QR Code
+      const generateQRCode = (elementId, text, size = 128) => {
+        document.getElementById(elementId).innerHTML = '';
+        new QRCode(document.getElementById(elementId), {
+          text: text,
+          width: size,
+          height: size,
+          colorDark : "#000000",
+          colorLight : "#ffffff",
+          correctLevel : QRCode.CorrectLevel.H
+        });
+      };
+
+      // Generate main QR code
+      const itemDetails = `Inventaris Kantor\nKode: INV-2023-001\nNama: Laptop Dell XPS 15\nStatus: Tersedia`;
+      generateQRCode('qrcode', itemDetails, 150);
+
+      // Print QR Code
+      $('#printQrBtn').click(function() {
+        // Generate printable QR code
+        $('#printableQr').empty();
+        new QRCode(document.getElementById('printableQr'), {
+          text: itemDetails,
+          width: 200,
+          height: 200,
+          colorDark : "#000000",
+          colorLight : "#ffffff",
+          correctLevel : QRCode.CorrectLevel.H
+        });
+        
+        const printModal = new bootstrap.Modal(document.getElementById('printQrModal'));
+        printModal.show();
+      });
+
+      // Confirm print
+      $('#confirmPrint').click(function() {
+        // In a real app, this would open print dialog
+        alert('Membuka dialog print...');
+        $('#printQrModal').modal('hide');
+      });
+
+      // Download QR Code
+      $('#downloadQrBtn').click(function() {
+        // In a real app, this would download the QR code
+        alert('Mengunduh QR Code...');
+      });
+
+      // Share QR Code
+      $('#shareQrBtn').click(function() {
+        // In a real app, this would share the QR code
+        alert('Membagikan QR Code...');
+      });
+
+      // Export loan history
+      $('#exportLoanHistory').click(function() {
+        // In a real app, this would export the loan history
+        alert('Mengekspor riwayat peminjaman...');
+      });
+
+      // Logout functionality
+      $('#logoutBtn').on('click', function(e) {
+        e.preventDefault();
+        if(confirm('Anda yakin ingin logout?')) {
+          // Here you would typically make an AJAX call to logout
+          console.log('Logging out...');
+          window.location.href = '../../login.html';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
